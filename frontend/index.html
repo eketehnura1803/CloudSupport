@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>CloudSupport - Create Ticket</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>CloudSupport</h1>
+      <p>Submit a support ticket</p>
+
+      <form id="ticketForm">
+        <input type="text" id="fullName" placeholder="Full Name" required />
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="text" id="subject" placeholder="Subject" required />
+
+        <select id="category" required>
+          <option value="">Select Category</option>
+          <option value="Technical">Technical</option>
+          <option value="Access">Access</option>
+          <option value="Bug">Bug</option>
+          <option value="Other">Other</option>
+        </select>
+
+        <select id="priority" required>
+          <option value="">Select Priority</option>
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+        </select>
+
+        <textarea
+          id="description"
+          placeholder="Describe your issue"
+          required
+        ></textarea>
+
+        <button type="submit">Submit Ticket</button>
+      </form>
+
+      <p id="message"></p>
+
+      <a href="admin.html">Go to Admin Page</a>
+    </div>
+
+    <script src="js/user.js"></script>
+  </body>
+</html>
