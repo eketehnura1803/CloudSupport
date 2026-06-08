@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>CloudSupport - Admin</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Admin Dashboard</h1>
+      <p>Manage support tickets</p>
+
+      <button onclick="loadTickets()">Refresh Tickets</button>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Subject</th>
+            <th>Category</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="ticketsTable"></tbody>
+      </table>
+
+      <a href="index.html">Back to User Page</a>
+    </div>
+
+    <script src="js/admin.js"></script>
+  </body>
+</html>
