@@ -311,3 +311,78 @@ textarea {
 .delete-btn:hover {
   background: #fecdca;
 }
+
+.admin-layout {
+  width: 100%;
+  padding: 34px 32px;
+}
+
+.admin-panel {
+  min-height: calc(100vh - 160px);
+}
+
+.admin-filters {
+  display: flex;
+  gap: 14px;
+}
+
+.admin-filters select {
+  width: 180px;
+  margin-top: 0;
+}
+
+.admin-tickets-list {
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+.admin-ticket-card {
+  display: grid;
+  grid-template-columns: 70px 1fr 220px;
+  gap: 20px;
+  align-items: center;
+  background: #fbfcff;
+  border: 1px solid #e4e7ec;
+  border-left: 6px solid #12b76a;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 12px 25px rgba(16, 24, 40, 0.05);
+}
+
+.admin-ticket-info h3 {
+  margin: 0 0 10px;
+  color: #071b4d;
+  font-size: 22px;
+}
+
+.admin-ticket-info p {
+  margin: 6px 0;
+  color: #344054;
+}
+
+.admin-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-actions select {
+  width: 100%;
+  margin-top: 0;
+}
+
+@media (max-width: 900px) {
+  .admin-ticket-card {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-filters {
+    flex-direction: column;
+  }
+
+  .admin-filters select {
+    width: 100%;
+  }
+}
