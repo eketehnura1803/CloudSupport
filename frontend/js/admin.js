@@ -1,3 +1,5 @@
+const API_BASE_URL = "https://txd3remqkj.execute-api.us-east-1.amazonaws.com";
+
 const categoryFilter = document.getElementById("categoryFilter");
 const statusFilter = document.getElementById("statusFilter");
 
@@ -5,84 +7,133 @@ document.addEventListener("DOMContentLoaded", loadAdminTickets);
 categoryFilter.addEventListener("change", loadAdminTickets);
 statusFilter.addEventListener("change", loadAdminTickets);
 
-function loadAdminTickets() {
+async function loadAdminTickets() {
   const ticketsList = document.getElementById("adminTicketsList");
-  const tickets = JSON.parse(localStorage.getItem("tickets")) || [];
 
-  const selectedCategory = categoryFilter.value;
-  const selectedStatus = statusFilter.value;
-const sortedTickets = [...tickets].reverse();
+  try {
+    const response = await fetch(`${API_BASE_URL}/tickets`);
 
-const filteredTickets = sortedTickets.filter(ticket => {
-  const matchCategory = selectedCategory === "All" || ticket.category === selectedCategory;
-  const matchStatus = selectedStatus === "All" || ticket.status === selectedStatus;
-  return matchCategory && matchStatus;
-});
+    if (!response.ok) {
+      throw new Error("Failed to load tickets");
+    }
 
-  if (filteredTickets.length === 0) {
+    const tickets = await response.json();
+
+    const selectedCategory = categoryFilter.value;
+    const selectedStatus = statusFilter.value;
+
+    const filteredTickets = tickets.filter(ticket => {
+      const matchCategory =
+        selectedCategory === "All" || ticket.category === selectedCategory;
+
+      const matchStatus =
+        selectedStatus === "All" || ticket.status === selectedStatus;
+
+      return matchCategory && matchStatus;
+    });
+
+    if (filteredTickets.length === 0) {
+      ticketsList.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">📭</div>
+          <h3>No tickets found</h3>
+          <p>Try changing the category or status filter.</p>
+        </div>
+      `;
+      return;
+    }
+
+    ticketsList.innerHTML = filteredTickets.map(ticket => {
+      return `
+        <div class="admin-ticket-card">
+          <div class="ticket-icon">${getCategoryIcon(ticket.category)}</div>
+
+          <div class="admin-ticket-info">
+            <h3>${ticket.subject}</h3>
+            <p><strong>User:</strong> ${ticket.fullName}</p>
+            <p><strong>Email:</strong> ${ticket.email}</p>
+            <p><strong>Category:</strong> ${ticket.category}</p>
+            <p><strong>Priority:</strong> 
+              <span class="${getPriorityClass(ticket.priority)}">
+                ${ticket.priority}
+              </span>
+            </p>
+            <p><strong>Status:</strong> ${ticket.status}</p>
+            <p><strong>Description:</strong> ${ticket.description}</p>
+            <p class="ticket-meta">${ticket.createdAt}</p>
+          </div>
+
+          <div class="admin-actions">
+            <select onchange="updateTicketStatus('${ticket.ticketId}', this.value)">
+              <option value="Open" ${ticket.status === "Open" ? "selected" : ""}>Open</option>
+              <option value="In Progress" ${ticket.status === "In Progress" ? "selected" : ""}>In Progress</option>
+              <option value="Closed" ${ticket.status === "Closed" ? "selected" : ""}>Closed</option>
+            </select>
+
+            <button class="delete-btn" onclick="deleteTicket('${ticket.ticketId}')">
+              🗑️ Delete
+            </button>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+  } catch (error) {
+    console.error(error);
     ticketsList.innerHTML = `
       <div class="empty">
-        <div class="empty-icon">📭</div>
-        <h3>No tickets found</h3>
-        <p>Try changing the category or status filter.</p>
+        <div class="empty-icon">⚠️</div>
+        <h3>Failed to load tickets</h3>
+        <p>Please check the API connection.</p>
       </div>
     `;
-    return;
   }
-
-  ticketsList.innerHTML = filteredTickets.map(ticket => {
-    return `
-      <div class="admin-ticket-card">
-        <div class="ticket-icon">${getCategoryIcon(ticket.category)}</div>
-
-        <div class="admin-ticket-info">
-          <h3>${ticket.subject}</h3>
-          <p><strong>User:</strong> ${ticket.fullName}</p>
-          <p><strong>Email:</strong> ${ticket.email}</p>
-          <p><strong>Category:</strong> ${ticket.category}</p>
-          <p><strong>Priority:</strong> <span class="${getPriorityClass(ticket.priority)}">${ticket.priority}</span></p>
-          <p><strong>Description:</strong> ${ticket.description}</p>
-          <p class="ticket-meta">${ticket.createdAt}</p>
-        </div>
-
-        <div class="admin-actions">
-          <select onchange="updateTicketStatus('${ticket.ticketId}', this.value)">
-            <option value="Open" ${ticket.status === "Open" ? "selected" : ""}>Open</option>
-            <option value="In Progress" ${ticket.status === "In Progress" ? "selected" : ""}>In Progress</option>
-            <option value="Closed" ${ticket.status === "Closed" ? "selected" : ""}>Closed</option>
-          </select>
-
-          <button class="delete-btn" onclick="deleteTicket('${ticket.ticketId}')">🗑️ Delete</button>
-        </div>
-      </div>
-    `;
-  }).join("");
 }
 
-function updateTicketStatus(ticketId, newStatus) {
-  const tickets = JSON.parse(localStorage.getItem("tickets")) || [];
+async function updateTicketStatus(ticketId, newStatus) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/tickets/${ticketId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        status: newStatus
+      })
+    });
 
-  const updatedTickets = tickets.map(ticket => {
-    if (ticket.ticketId === ticketId) {
-      return { ...ticket, status: newStatus };
+    if (!response.ok) {
+      throw new Error("Failed to update ticket status");
     }
-    return ticket;
-  });
 
-  localStorage.setItem("tickets", JSON.stringify(updatedTickets));
-  loadAdminTickets();
+    loadAdminTickets();
+
+  } catch (error) {
+    console.error(error);
+    alert("Failed to update ticket status. Please try again.");
+  }
 }
 
-function deleteTicket(ticketId) {
+async function deleteTicket(ticketId) {
   if (!confirm("Are you sure you want to delete this ticket?")) {
     return;
   }
 
-  const tickets = JSON.parse(localStorage.getItem("tickets")) || [];
-  const updatedTickets = tickets.filter(ticket => ticket.ticketId !== ticketId);
+  try {
+    const response = await fetch(`${API_BASE_URL}/tickets/${ticketId}`, {
+      method: "DELETE"
+    });
 
-  localStorage.setItem("tickets", JSON.stringify(updatedTickets));
-  loadAdminTickets();
+    if (!response.ok) {
+      throw new Error("Failed to delete ticket");
+    }
+
+    loadAdminTickets();
+
+  } catch (error) {
+    console.error(error);
+    alert("Failed to delete ticket. Please try again.");
+  }
 }
 
 function getPriorityClass(priority) {
